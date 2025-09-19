@@ -23,6 +23,10 @@ const nextConfig = {
       },
     ]
   },
+  // Allow all hosts for Replit proxy environment
+  experimental: {
+    allowedRevalidateHeaderKeys: ['*'],
+  },
 }
 
 export default nextConfig
