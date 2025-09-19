@@ -1,31 +1,36 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Only ignore build errors in development
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: process.env.NODE_ENV === 'development',
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: process.env.NODE_ENV === 'development',
   },
   images: {
     unoptimized: true,
   },
-  // Configure for Replit environment - allow all hosts since user sees via proxy
+  // Configure security headers for both development and production
   async headers() {
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    
     return [
       {
         source: '/(.*)',
         headers: [
           {
+            key: 'Content-Security-Policy',
+            value: isDevelopment 
+              ? "frame-ancestors 'self' *.replit.dev *.replit.com;" 
+              : "frame-ancestors 'self';",
+          },
+          {
             key: 'X-Frame-Options',
-            value: 'ALLOWALL',
+            value: 'SAMEORIGIN',
           },
         ],
       },
     ]
-  },
-  // Allow all hosts for Replit proxy environment
-  experimental: {
-    allowedRevalidateHeaderKeys: ['*'],
   },
 }
 
