@@ -1,24 +1,21 @@
 'use server'
 
 import { supabase } from '@/lib/supabase/server'
+import { generateEmbedding } from '@/lib/ai/embed'
 import { revalidatePath } from 'next/cache'
 
-export async function createNote(content: string) {
-  try {
-    // 1. Appeler notre endpoint /api/embed pour obtenir le vecteur
-    const embedResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/embed`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ text: content }),
-    })
-
-    if (!embedResponse.ok) {
-      throw new Error('Failed to generate embedding')
+export async function createNote(formData: FormData) {
+  const content = formData.get('content') as string
+  
+  if (!content || content.trim() === '') {
+    return { 
+      success: false, 
+      error: 'Le contenu de la note est requis' 
     }
-
-    const { embedding } = await embedResponse.json()
+  }
+  try {
+    // 1. Générer l'embedding directement via le helper (plus efficace qu'un appel HTTP)
+    const embedding = await generateEmbedding(content)
 
     // 2. Insérer la nouvelle note dans Supabase avec son embedding
     const { data, error } = await supabase
@@ -39,13 +36,10 @@ export async function createNote(content: string) {
     revalidatePath('/test-architecture')
     revalidatePath('/')
 
-    return { success: true, note: data[0] }
+    console.log('✅ Note créée avec succès:', data[0])
 
   } catch (error) {
-    console.error('Create note error:', error)
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to create note' 
-    }
+    console.error('❌ Erreur lors de la création de la note:', error)
+    throw error // Laisser Next.js gérer l'erreur
   }
 }

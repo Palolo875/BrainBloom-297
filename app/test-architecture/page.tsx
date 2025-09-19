@@ -20,7 +20,7 @@ export default async function TestArchitecturePage() {
       {/* Formulaire de création de note */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4">✍️ Créer une nouvelle note</h2>
-        <form action={createNote}>
+        <form action={createNote} className="space-y-4">
           <div className="mb-4">
             <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
               Contenu de la note
