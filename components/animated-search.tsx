@@ -56,7 +56,7 @@ export function AnimatedSearch({
         pressed={isExpanded}
         className={cn(
           "transition-all duration-400 ease-out cursor-pointer overflow-hidden",
-          isExpanded ? "w-80" : "w-16 h-16",
+          isExpanded ? "w-full sm:w-80 max-w-md" : "w-16 h-16",
         )}
         onClick={!isExpanded ? handleToggle : undefined}
       >

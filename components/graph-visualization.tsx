@@ -474,9 +474,9 @@ export function GraphVisualization() {
       </div>
 
       {/* Graph Canvas */}
-      <div className="absolute top-20 left-6 right-6 bottom-32 sm:top-24 sm:left-6 sm:right-6 sm:bottom-6">
+      <div className="absolute top-16 left-3 right-3 bottom-24 sm:top-20 sm:left-6 sm:right-6 lg:top-24 lg:bottom-6">
         <SoftUICard className="w-full h-full bg-white rounded-3xl shadow-xl overflow-hidden">
-          <div className={`w-full h-full transition-all duration-500 ${showSidebar ? "pr-64 sm:pr-80" : "pr-0"}`}>
+          <div className={`w-full h-full transition-all duration-500 ${showSidebar ? "pr-56 sm:pr-64 lg:pr-80" : "pr-0"}`}>
             <canvas
               ref={canvasRef}
               onClick={handleCanvasClick}
@@ -513,7 +513,7 @@ export function GraphVisualization() {
 
       {/* Enhanced Side Panel */}
       {showSidebar && selectedNode && (
-        <div className="absolute top-0 right-0 w-64 sm:w-80 h-full bg-white border-l border-gray-200 animate-in slide-in-from-right fade-in duration-500">
+        <div className="absolute top-0 right-0 w-56 sm:w-64 lg:w-80 h-full bg-white border-l border-gray-200 animate-in slide-in-from-right fade-in duration-500">
           <div className="p-3 sm:p-6 h-full overflow-y-auto space-y-4 sm:space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">

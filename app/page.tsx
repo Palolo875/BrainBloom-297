@@ -26,10 +26,10 @@ export default function BrainBloomHome() {
 
   if (currentView === "home") {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-6">
-        <div className="max-w-2xl mx-auto text-center space-y-6 sm:space-y-8">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="max-w-xs sm:max-w-2xl mx-auto text-center space-y-6 sm:space-y-8">
           {/* Hero Illustration */}
-          <div className="w-48 h-48 sm:w-64 sm:h-64 mx-auto mb-6 sm:mb-8">
+          <div className="w-40 h-40 sm:w-48 sm:h-48 lg:w-64 lg:h-64 mx-auto mb-6 sm:mb-8">
             <img
               src="/hand-drawn-constellation-emanating-from-profile-he.jpg"
               alt="BrainBloom constellation illustration"
@@ -38,10 +38,10 @@ export default function BrainBloomHome() {
           </div>
 
           <div className="space-y-3 sm:space-y-4">
-            <h1 className="text-3xl sm:text-4xl font-serif text-foreground font-bold text-balance">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-foreground font-bold text-balance">
               Welcome to BrainBloom
             </h1>
-            <p className="text-base sm:text-lg text-muted-foreground text-pretty max-w-lg mx-auto px-4">
+            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground text-pretty max-w-xs sm:max-w-lg mx-auto px-2 sm:px-4">
               Your digital garden of ideas. Cultivate thoughts, connect concepts, and watch your knowledge bloom.
             </p>
           </div>
@@ -166,7 +166,7 @@ export default function BrainBloomHome() {
 
           {/* Notes Grid */}
           {notes.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-20 sm:mb-24">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-16 sm:mb-20 lg:mb-24">
               {notes.map((note, index) => (
                 <NoteCard
                   key={note.id}

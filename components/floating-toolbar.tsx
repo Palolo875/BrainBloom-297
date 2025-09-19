@@ -57,7 +57,7 @@ export function FloatingToolbar({ onFormat, onColorChange, onAIAction, onStructu
       style={{ zIndex: 50000 }}
     >
       <div className="flex flex-col items-center gap-3">
-        <SoftUICard className="flex items-center gap-1 p-2 shadow-2xl border border-border/30 backdrop-blur-sm bg-background/95">
+        <SoftUICard className="flex items-center gap-1 sm:gap-2 p-2 shadow-2xl border border-border/30 backdrop-blur-sm bg-background/95 max-w-full overflow-x-auto">
           {toolbarButtons.map((button, index) => (
             <div
               key={button.action}
@@ -67,7 +67,7 @@ export function FloatingToolbar({ onFormat, onColorChange, onAIAction, onStructu
               <button
                 onClick={() => handleButtonClick(button.action)}
                 className={cn(
-                  "w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150",
+                  "w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all duration-150",
                   "hover:scale-110 hover:bg-muted/60 hover:shadow-lg active:scale-95",
                   "focus:outline-none focus:ring-2 focus:ring-primary/20",
                   button.color,
@@ -75,7 +75,7 @@ export function FloatingToolbar({ onFormat, onColorChange, onAIAction, onStructu
                 )}
                 title={button.tooltip}
               >
-                <button.icon className="w-4 h-4" />
+                <button.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </div>
           ))}

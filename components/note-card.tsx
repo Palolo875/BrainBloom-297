@@ -5,19 +5,20 @@ import type { Note } from "@/hooks/use-notes"
 import { formatDistanceToNow } from "date-fns"
 import { Network } from "lucide-react"
 
-interface NoteCardProps {
+interface NoteCardProps extends React.HTMLAttributes<HTMLDivElement> {
   note: Note
   onClick: () => void
   className?: string
 }
 
-export function NoteCard({ note, onClick, className }: NoteCardProps) {
+export function NoteCard({ note, onClick, className, ...rest }: NoteCardProps) {
   return (
     <SoftUICard
-      className={`p-6 space-y-3 animate-in slide-in-from-bottom-4 fade-in duration-500 ${className}`}
+      className={`p-4 sm:p-6 space-y-3 animate-in slide-in-from-bottom-4 fade-in duration-500 ${className}`}
       onClick={onClick}
+      {...rest}
     >
-      <h3 className="font-serif text-lg font-semibold text-foreground text-balance">{note.title}</h3>
+      <h3 className="font-serif text-base sm:text-lg font-semibold text-foreground text-balance">{note.title}</h3>
 
       <p className="text-muted-foreground text-sm leading-relaxed text-pretty">{note.excerpt}</p>
 
