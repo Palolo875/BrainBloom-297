@@ -4,14 +4,11 @@ import { supabase } from '@/lib/supabase/server'
 import { generateEmbedding } from '@/lib/ai/embed'
 import { revalidatePath } from 'next/cache'
 
-export async function createNote(formData: FormData) {
+export async function createNote(formData: FormData): Promise<void> {
   const content = formData.get('content') as string
   
   if (!content || content.trim() === '') {
-    return { 
-      success: false, 
-      error: 'Le contenu de la note est requis' 
-    }
+    throw new Error('Le contenu de la note est requis')
   }
   try {
     // 1. Générer l'embedding directement via le helper (plus efficace qu'un appel HTTP)

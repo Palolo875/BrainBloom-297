@@ -1,3 +1,5 @@
+import 'server-only'
+
 /**
  * Helper pour générer des embeddings via Hugging Face
  * Utilisé côté serveur uniquement (Server Actions et Route Handlers)
