@@ -10,6 +10,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Allow Replit dev origins for proxy compatibility
+  allowedDevOrigins: ['*.replit.dev', '*.replit.com', '*.repl.co'],
   // Configure security headers for both development and production
   async headers() {
     const isDevelopment = process.env.NODE_ENV === 'development'
