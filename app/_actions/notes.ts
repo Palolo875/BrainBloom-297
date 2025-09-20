@@ -2,6 +2,7 @@
 
 import { supabase } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { generateEmbedding } from '@/lib/ai/embed'
 
 export async function createNote(formData: FormData): Promise<void> {
   const content = formData.get('content') as string
@@ -10,39 +11,26 @@ export async function createNote(formData: FormData): Promise<void> {
     throw new Error('Le contenu de la note est requis')
   }
   try {
-    // 1. Appeler en interne notre endpoint /api/embed pour obtenir le vecteur
-    const embedResponse = await fetch(`${process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : ''}/api/embed`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: content })
-    })
-
-    if (!embedResponse.ok) {
-      throw new Error(`Embedding API error: ${embedResponse.statusText}`)
-    }
-
-    const { embedding } = await embedResponse.json()
+    // 1. Générer l'embedding directement en appelant la fonction helper
+    const embedding = await generateEmbedding(content)
 
     // 2. Insérer la nouvelle note dans Supabase avec son embedding
+    // Les timestamps created_at/updated_at sont gérés par la base de données
     const { data, error } = await supabase
       .from('notes')
-      .insert({
-        content,
-        embedding,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
+      .insert({ content, embedding })
       .select()
+      .single()
 
     if (error) {
       throw new Error(`Database error: ${error.message}`)
     }
 
-    // 3. Rafraîchir la page des notes
+    // 3. Rafraîchir les chemins qui affichent les notes
     revalidatePath('/test-architecture')
     revalidatePath('/')
 
-    console.log('✅ Note créée avec succès:', data[0])
+    console.log('✅ Note créée avec succès:', data)
 
   } catch (error) {
     console.error('❌ Erreur lors de la création de la note:', error)
