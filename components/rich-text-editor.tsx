@@ -29,6 +29,7 @@ export function RichTextEditor({ note, onSave, onClose, onCreateNote }: RichText
   const contentRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLInputElement>(null)
   const saveTimeoutRef = useRef<NodeJS.Timeout>()
+  const toolbarRef = useRef<HTMLDivElement>(null)
 
   const isMobile = useMemo(() => typeof window !== "undefined" && window.innerWidth < 640, [])
 
@@ -292,6 +293,14 @@ export function RichTextEditor({ note, onSave, onClose, onCreateNote }: RichText
     [onCreateNote],
   )
 
+  const handleBackdropClick = useCallback((e: React.MouseEvent) => {
+    // Check if the click target is within the toolbar
+    if (toolbarRef.current && toolbarRef.current.contains(e.target as Node)) {
+      return // Don't close if clicking on the toolbar
+    }
+    setShowFloatingToolbar(false)
+  }, [])
+
   const handleContentInput = useCallback((e: React.FormEvent<HTMLDivElement>) => {
     const newContent = e.currentTarget.textContent || ""
     setContent(newContent)
@@ -351,8 +360,9 @@ export function RichTextEditor({ note, onSave, onClose, onCreateNote }: RichText
         {showFloatingToolbar && (
           <>
             {/* Invisible backdrop to detect clicks outside */}
-            <div className="fixed inset-0 z-[9999]" onClick={() => setShowFloatingToolbar(false)} />
+            <div className="fixed inset-0 z-[9999]" onClick={handleBackdropClick} />
             <div
+              ref={toolbarRef}
               style={{
                 position: "fixed",
                 top: toolbarPosition.top,

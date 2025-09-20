@@ -17,10 +17,16 @@ interface FloatingToolbarProps {
 export function FloatingToolbar({ onFormat, onColorChange, onAIAction, onStructuralAction }: FloatingToolbarProps) {
   const [activeSubmenu, setActiveSubmenu] = useState<"ai" | "structural" | null>(null)
   const [isVisible, setIsVisible] = useState(false)
+  const [savedSelection, setSavedSelection] = useState<Range | null>(null)
   const toolbarRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setIsVisible(true)
+    // Save the current selection when toolbar mounts
+    const selection = window.getSelection()
+    if (selection && selection.rangeCount > 0) {
+      setSavedSelection(selection.getRangeAt(0).cloneRange())
+    }
   }, [])
 
   const toolbarButtons = [
@@ -33,14 +39,30 @@ export function FloatingToolbar({ onFormat, onColorChange, onAIAction, onStructu
     { icon: Layers, action: "structural" as const, color: "text-accent-honey", delay: 120, tooltip: "Structure" },
   ]
 
-  const handleButtonClick = (action: string) => {
+  const restoreSelection = () => {
+    if (savedSelection) {
+      const selection = window.getSelection()
+      if (selection) {
+        selection.removeAllRanges()
+        selection.addRange(savedSelection)
+      }
+    }
+  }
+
+  const handleButtonClick = (action: string, e?: React.MouseEvent) => {
+    // Prevent event propagation to avoid triggering backdrop click
+    e?.stopPropagation()
+    e?.preventDefault()
+
+    // Restore selection before performing action
+    restoreSelection()
+
     if (action === "ai") {
       setActiveSubmenu(activeSubmenu === "ai" ? null : "ai")
     } else if (action === "structural") {
       setActiveSubmenu(activeSubmenu === "structural" ? null : "structural")
     } else if (action === "task") {
-      const selection = window.getSelection()
-      const selectedText = selection?.toString() || ""
+      const selectedText = savedSelection?.toString() || ""
       onStructuralAction?.("create-task", { text: selectedText })
     } else {
       onFormat(action as any)
@@ -55,6 +77,8 @@ export function FloatingToolbar({ onFormat, onColorChange, onAIAction, onStructu
         isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95",
       )}
       style={{ zIndex: 50000 }}
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
     >
       <div className="flex flex-col items-center gap-3">
         <SoftUICard className="flex items-center gap-1 sm:gap-2 p-2 shadow-2xl border border-border/30 backdrop-blur-sm bg-background/95 max-w-full overflow-x-auto">
@@ -65,7 +89,8 @@ export function FloatingToolbar({ onFormat, onColorChange, onAIAction, onStructu
               style={{ animationDelay: `${button.delay}ms` }}
             >
               <button
-                onClick={() => handleButtonClick(button.action)}
+                onClick={(e) => handleButtonClick(button.action, e)}
+                onMouseDown={(e) => e.preventDefault()}
                 className={cn(
                   "w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all duration-150",
                   "hover:scale-110 hover:bg-muted/60 hover:shadow-lg active:scale-95",
