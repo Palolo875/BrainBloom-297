@@ -14,9 +14,8 @@ import { JournalingSystem } from "@/components/journaling-system"
 import { LearningSystem } from "@/components/learning-system"
 import { useNotes } from "@/hooks/use-notes"
 import { BookOpen, Network, Settings, Sparkles, Plus, Compass, Calendar, Brain } from "lucide-react"
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/lib/supabase/client';
 export default function BrainBloomHome() {
-const supabase = createClientComponentClient();
 
 const handleSignIn = async () => {
   await supabase.auth.signInWithOAuth({
