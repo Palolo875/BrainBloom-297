@@ -5,7 +5,7 @@
 Pour utiliser l'architecture backend complète, vous devez configurer les variables d'environnement dans `.env.local` :
 
 ### 🔧 Variables Supabase
-```env
+\`\`\`env
 # Supabase Configuration (Server-side)
 SUPABASE_URL="https://votre-projet.supabase.co"
 SUPABASE_ANON_KEY="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
@@ -14,18 +14,18 @@ SUPABASE_SERVICE_ROLE_KEY="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 # Supabase Configuration (Client-side - public)
 NEXT_PUBLIC_SUPABASE_URL="https://votre-projet.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
-```
+\`\`\`
 
 ### 🤖 Hugging Face AI
-```env
+\`\`\`env
 HF_TOKEN="hf_votre_token_hugging_face"
-```
+\`\`\`
 
 ### 📊 Structure de Base de Données
 
 Créez une table `notes` dans Supabase :
 
-```sql
+\`\`\`sql
 CREATE TABLE notes (
   id BIGSERIAL PRIMARY KEY,
   content TEXT NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE notes (
 
 -- Index pour recherche vectorielle
 CREATE INDEX ON notes USING ivfflat (embedding vector_cosine_ops);
-```
+\`\`\`
 
 ## 🎯 Architecture Implémentée
 

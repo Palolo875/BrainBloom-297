@@ -23,4 +23,3 @@ export default function AuthCallback() {
 
                                                               return <p>Please wait, logging you in...</p>;
                                                               }
-                                                              
