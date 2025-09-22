@@ -6,11 +6,12 @@ import { useEffect, useRef, useState } from "react"
 import { SoftUICard } from "./soft-ui-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Filter, X, Calendar, Tag, Lightbulb, Focus } from "lucide-react"
+import { Search, Filter, X, Calendar, Tag, Lightbulb, Focus, Loader2 } from "lucide-react"
 import { useNotes } from "@/hooks/use-notes"
 import type { Note } from "@/hooks/use-notes"
 import { formatDistanceToNow } from "date-fns"
 import { AdvancedGraphFilters } from "./advanced-graph-filters"
+import { findSimilarNotes } from "@/app/_actions/notes"
 import { PathFinder } from "./path-finder"
 
 interface GraphNode {
@@ -43,7 +44,8 @@ export function GraphVisualization() {
   const [localGraphMode, setLocalGraphMode] = useState(false)
   const [localGraphCenter, setLocalGraphCenter] = useState<string | null>(null)
   const [savedViews, setSavedViews] = useState<Array<{ name: string; filters: any[] }>>([])
-  const [suggestedConnections, setSuggestedConnections] = useState<Array<{ note: Note; similarity: number }>>([])
+  const [suggestedConnections, setSuggestedConnections] = useState<Array<{ id: number, content: string, similarity: number }>>([])
+  const [isFindingSuggestions, setIsFindingSuggestions] = useState(false)
 
   const { allNotes, getConnectedNotes } = useNotes()
 
@@ -252,25 +254,29 @@ export function GraphVisualization() {
     return nodes.filter((node) => visibleNodeIds.has(node.id))
   }
 
-  const generateConnectionSuggestions = (note: Note) => {
-    // Simulate semantic similarity analysis
-    const suggestions = allNotes
-      .filter((n) => n.id !== note.id && !note.connections.includes(n.id))
-      .map((n) => {
-        // Simple similarity based on common words and tags
-        const noteWords = note.content.toLowerCase().split(/\s+/)
-        const candidateWords = n.content.toLowerCase().split(/\s+/)
-        const commonWords = noteWords.filter((word) => candidateWords.includes(word) && word.length > 3)
-        const commonTags = note.tags.filter((tag) => n.tags.includes(tag))
+  const fetchConnectionSuggestions = async (note: Note) => {
+    setIsFindingSuggestions(true)
+    setSuggestedConnections([])
 
-        const similarity = commonWords.length * 0.7 + commonTags.length * 1.5
-        return { note: n, similarity }
-      })
-      .filter((s) => s.similarity > 1)
-      .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, 3)
+    // The note id from the mock data is a string, but the DB id is a number.
+    // This will need to be reconciled when the graph uses real data.
+    // For now, we attempt a conversion.
+    const noteId = parseInt(note.id, 10)
+    if (isNaN(noteId)) {
+        console.error("Invalid note ID for AI search");
+        setIsFindingSuggestions(false);
+        return;
+    }
 
-    setSuggestedConnections(suggestions)
+    const result = await findSimilarNotes(noteId)
+
+    if (result.error) {
+      console.error("Failed to find similar notes:", result.error)
+    } else if (result.data) {
+      setSuggestedConnections(result.data)
+    }
+
+    setIsFindingSuggestions(false)
   }
 
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -291,7 +297,7 @@ export function GraphVisualization() {
     if (clickedNode) {
       setSelectedNode(clickedNode)
       setShowSidebar(true)
-      generateConnectionSuggestions(clickedNode.note)
+      fetchConnectionSuggestions(clickedNode.note)
 
       // Double-click for local graph mode
       if (event.detail === 2) {
@@ -567,24 +573,31 @@ export function GraphVisualization() {
               />
 
               {/* AI Connection Suggestions */}
-              {suggestedConnections.length > 0 && (
-                <div>
-                  <h4 className="text-xs sm:text-sm font-medium text-gray-800 mb-2 sm:mb-3 flex items-center gap-2">
-                    <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4 text-accent-peach" />
-                    Connexions Potentielles
-                  </h4>
+              <div>
+                <h4 className="text-xs sm:text-sm font-medium text-gray-800 mb-2 sm:mb-3 flex items-center gap-2">
+                  <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4 text-accent-peach" />
+                  Connexions Potentielles (IA)
+                </h4>
+                {isFindingSuggestions ? (
+                  <div className="flex items-center justify-center p-4">
+                    <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+                  </div>
+                ) : suggestedConnections.length > 0 ? (
                   <div className="space-y-2">
                     {suggestedConnections.map((suggestion) => (
                       <SoftUICard
-                        key={suggestion.note.id}
+                        key={suggestion.id}
                         className="p-2 sm:p-3 cursor-pointer hover:bg-muted/50 transition-colors duration-200"
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex-1 min-w-0">
                             <div className="text-xs sm:text-sm font-medium text-gray-800 truncate">
-                              {suggestion.note.title}
+                              {/* The RPC returns 'content', not 'title' or 'excerpt'. We display the content. */}
+                              {suggestion.content}
                             </div>
-                            <div className="text-xs text-gray-600 mt-1 line-clamp-2">{suggestion.note.excerpt}</div>
+                            <div className="text-xs text-gray-600 mt-1">
+                              Similarité: {Math.round(suggestion.similarity * 100)}%
+                            </div>
                           </div>
                           <Button
                             size="sm"
@@ -597,8 +610,12 @@ export function GraphVisualization() {
                       </SoftUICard>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="text-center text-xs text-gray-500 p-3 bg-gray-50 rounded-lg">
+                    Aucune suggestion trouvée.
+                  </div>
+                )}
+              </div>
 
               {/* Actions */}
               <div className="pt-3 sm:pt-4 border-t border-gray-200">

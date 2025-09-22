@@ -49,3 +49,47 @@ export async function createNote(formData: FormData): Promise<void> {
     throw new Error('Failed to create note.')
   }
 }
+
+export async function findSimilarNotes(noteId: number): Promise<{ data?: any[]; error?: string }> {
+  if (!noteId) {
+    return { error: 'Note ID is required.' }
+  }
+
+  const supabase = createServerActionClient({ cookies })
+
+  // 1. Get user session
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: 'User is not authenticated.' }
+  }
+
+  // 2. Get the embedding of the source note
+  const { data: sourceNote, error: sourceError } = await supabase
+    .from('notes')
+    .select('embedding')
+    .eq('id', noteId)
+    .eq('user_id', user.id) // Security check: ensure the note belongs to the user
+    .single()
+
+  if (sourceError || !sourceNote || !sourceNote.embedding) {
+    console.error('Error fetching source note:', sourceError?.message)
+    return { error: 'Could not find the source note or its embedding.' }
+  }
+
+  // 3. Call the database function to find similar notes
+  const { data: similarNotes, error: rpcError } = await supabase.rpc('match_notes', {
+    query_embedding: sourceNote.embedding,
+    match_threshold: 0.75, // Adjust this threshold as needed
+    match_count: 5,
+  })
+
+  if (rpcError) {
+    console.error('Error calling RPC function:', rpcError.message)
+    return { error: 'Failed to find similar notes.' }
+  }
+
+  // 4. Filter out the source note itself from the results
+  const filteredNotes = similarNotes.filter((note: any) => note.id !== noteId)
+
+  return { data: filteredNotes }
+}
