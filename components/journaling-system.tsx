@@ -10,7 +10,7 @@ import { ArrowLeft, Calendar, TrendingUp, Activity, Heart, Book, Moon, Coffee, D
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, subMonths, addMonths, parseISO } from "date-fns"
 import { fr } from "date-fns/locale"
 import type { JournalEntryFromDB } from "@/app/journal/page"
-import { saveJournalEntry } from "@/app/_actions/journal"
+import { saveJournalEntry, findSimilarJournalEntries } from "@/app/_actions/journal"
 
 // Internal component state uses Date objects for easier manipulation
 interface JournalEntry {
@@ -33,6 +33,8 @@ export function JournalingSystem({ initialEntries }: JournalingSystemProps) {
   const [currentView, setCurrentView] = useState<"today" | "calendar" | "stats">("today")
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [isSaving, setIsSaving] = useState(false)
+  const [similarEntries, setSimilarEntries] = useState<any[]>([])
+  const [isLoadingSimilar, setIsLoadingSimilar] = useState(false)
 
   // Transform DB entries (with string dates) to internal state (with Date objects)
   const transformedEntries = useMemo(() => {
@@ -62,8 +64,20 @@ export function JournalingSystem({ initialEntries }: JournalingSystemProps) {
     const existingTodayEntry = entries.find((entry) => isSameDay(entry.date, today))
     if (existingTodayEntry) {
       setTodayEntry(existingTodayEntry)
+      if (typeof existingTodayEntry.id === 'number') {
+        fetchSimilarEntries(existingTodayEntry.id)
+      }
     }
   }, [entries, today])
+
+  const fetchSimilarEntries = async (entryId: number) => {
+    setIsLoadingSimilar(true)
+    const result = await findSimilarJournalEntries(entryId)
+    if (result.data) {
+      setSimilarEntries(result.data)
+    }
+    setIsLoadingSimilar(false)
+  }
 
   const availableActivities = [
     { id: "sport", label: "Sport", icon: Dumbbell },
@@ -247,6 +261,29 @@ export function JournalingSystem({ initialEntries }: JournalingSystemProps) {
                 {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sauvegarde...</> : (todayEntry.id ? "Mettre à jour" : "Sauvegarder") + " l'entrée"}
               </Button>
             </SoftUICard>
+
+            {/* Similar Entries Section */}
+            {todayEntry.id && (
+                 <SoftUICard className="p-6">
+                    <h3 className="text-xl font-serif font-semibold text-foreground mb-4">Souvenirs similaires...</h3>
+                    {isLoadingSimilar ? (
+                        <div className="flex justify-center items-center p-4">
+                            <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+                        </div>
+                    ) : similarEntries.length > 0 ? (
+                        <div className="space-y-4">
+                            {similarEntries.map(entry => (
+                                <div key={entry.id} className="border-b border-gray-200 pb-3">
+                                    <p className="font-semibold text-sm mb-1">{format(parseISO(entry.entry_date), "d MMMM yyyy", { locale: fr })}</p>
+                                    <p className="text-sm text-gray-600 line-clamp-2">{entry.content}</p>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-gray-500 text-center">Aucune entrée similaire trouvée.</p>
+                    )}
+                 </SoftUICard>
+            )}
           </div>
         </div>
       </div>
