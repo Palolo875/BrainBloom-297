@@ -4,49 +4,69 @@ import { revalidatePath } from 'next/cache'
 import { generateEmbedding } from '@/lib/ai/embed'
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+import { z } from 'zod'
 
-export async function createNote(formData: FormData): Promise<void> {
-  const content = formData.get('content') as string
+const noteSchema = z.object({
+    title: z.string().min(3, "Le titre doit contenir au moins 3 caractères."),
+    content: z.string().optional(),
+    // Tags will be a comma-separated string from the form
+    tags: z.string().optional().transform(val => val ? val.split(',').map(tag => tag.trim()) : []),
+});
+
+
+export async function createNote(formData: FormData) {
   const supabase = createServerActionClient({ cookies })
 
-  // 1. Get user session
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    // This should ideally redirect to login or show a more specific error
-    throw new Error('User is not authenticated. Please log in to create a note.')
+    return { error: { message: 'Authentication required.' } }
   }
-  
-  if (!content || content.trim() === '') {
-    throw new Error('Le contenu de la note est requis')
+
+  const rawData = {
+    title: formData.get('title'),
+    content: formData.get('content'),
+    tags: formData.get('tags'),
   }
+
+  const validated = noteSchema.safeParse(rawData);
+  if (!validated.success) {
+    return { error: { message: 'Invalid data.', details: validated.error.issues } }
+  }
+
+  const { title, content, tags } = validated.data;
+
+  // An embedding is generated from the title and content for better semantic search
+  const textToEmbed = `${title}\n${content || ''}`;
 
   try {
-    // 2. Generate embedding
-    const embedding = await generateEmbedding(content)
+    const embedding = await generateEmbedding(textToEmbed)
 
-    // 3. Insert the new note with the user_id
     const { data, error } = await supabase
       .from('notes')
-      .insert({ content, embedding, user_id: user.id })
+      .insert({
+        title,
+        content,
+        tags,
+        embedding,
+        user_id: user.id
+      })
       .select()
       .single()
 
     if (error) {
-      // This could be a DB error or an RLS error if policies are not set up correctly
       console.error('Database error:', error.message)
-      throw new Error(`Database error: ${error.message}`)
+      return { error: { message: `Database error: ${error.message}` } }
     }
 
-    // 4. Revalidate paths
     revalidatePath('/test-architecture')
+    revalidatePath('/graph') // Also revalidate graph page
     revalidatePath('/')
 
-    console.log('✅ Note created successfully for user:', user.id, data)
+    return { data }
 
-  } catch (error) {
-    console.error('❌ Error creating note:', error)
-    // Re-throw a more generic error to the client for security
-    throw new Error('Failed to create note.')
+  } catch (e: any) {
+    console.error('Error creating note:', e)
+    return { error: { message: 'Failed to create note.' } }
   }
 }
 
