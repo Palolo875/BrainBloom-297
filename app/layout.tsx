@@ -7,6 +7,7 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Suspense } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
+import AuthButton from "@/components/auth-button"
 
 const lexend = Lexend({
   subsets: ["latin"],
@@ -35,7 +36,14 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans ${lexend.variable} ${lora.variable} ${GeistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <Suspense fallback={null}>{children}</Suspense>
+          <div className="min-h-screen flex flex-col">
+            <header className="w-full flex justify-end p-4">
+              <AuthButton />
+            </header>
+            <main className="flex-1 flex flex-col">
+              <Suspense fallback={null}>{children}</Suspense>
+            </main>
+          </div>
         </ThemeProvider>
         <Analytics />
       </body>
