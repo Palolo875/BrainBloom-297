@@ -39,17 +39,39 @@ export default async function TestArchitecturePage() {
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <h2 className="text-xl font-semibold mb-4">✍️ Créer une nouvelle note</h2>
             <form action={createNote} className="space-y-4">
-              <div className="mb-4">
+              <div>
+                 <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                  Titre
+                </label>
+                <input
+                  id="title"
+                  name="title"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Titre de votre note"
+                  required
+                />
+              </div>
+              <div>
                 <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-                  Contenu de la note
+                  Contenu de la note (optionnel)
                 </label>
                 <textarea
                   id="content"
                   name="content"
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Écrivez votre note ici... (un embedding sera automatiquement généré)"
-                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Écrivez votre note ici..."
+                />
+              </div>
+               <div>
+                <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
+                  Tags (séparés par des virgules)
+                </label>
+                <input
+                  id="tags"
+                  name="tags"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="ex: idée, projet, urgent"
                 />
               </div>
               <button
@@ -75,14 +97,17 @@ export default async function TestArchitecturePage() {
               <div className="space-y-4">
                 {notes.map((note) => (
                   <div key={note.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="mb-2">
-                      <span className="text-sm text-gray-500">
-                        ID: {note.id} | Créée le : {new Date(note.created_at).toLocaleString('fr-FR')}
-                      </span>
-                    </div>
+                    <h3 className="font-bold text-lg mb-2">{note.title}</h3>
                     <div className="mb-3">
                       <p className="text-gray-800">{note.content}</p>
                     </div>
+                    {note.tags && note.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-3">
+                            {note.tags.map((tag: string) => (
+                                <span key={tag} className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs">{tag}</span>
+                            ))}
+                        </div>
+                    )}
                     <div className="text-xs text-gray-400">
                       <details>
                         <summary className="cursor-pointer hover:text-gray-600">
@@ -93,6 +118,9 @@ export default async function TestArchitecturePage() {
                         </pre>
                       </details>
                     </div>
+                     <div className="text-right text-xs text-gray-500 mt-2">
+                        ID: {note.id} | Créée le : {new Date(note.created_at).toLocaleString('fr-FR')}
+                      </div>
                   </div>
                 ))}
               </div>
