@@ -29,11 +29,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  params: {locale}
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
+  params: {locale: string};
 }>) {
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body className={`font-sans ${lexend.variable} ${lora.variable} ${GeistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <div className="min-h-screen flex flex-col">
