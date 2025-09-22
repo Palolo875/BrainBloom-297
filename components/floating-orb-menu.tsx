@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react"
 import { SoftUICard } from "@/components/soft-ui-card"
-import { BookOpen, Network, Settings, Sparkles, Plus, Compass, Calendar, Brain } from "lucide-react"
+import { BookOpen, Network, Settings, Sparkles, Compass, Calendar, Brain } from "lucide-react"
 
 // Floating Orb Menu Component
 export function FloatingOrbMenu({
