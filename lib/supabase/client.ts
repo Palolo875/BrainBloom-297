@@ -1,19 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+// 1. Lire les variables d'environnement
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Validation des variables d'environnement côté client
-if (!supabaseUrl) {
-  console.warn('⚠️  SUPABASE: NEXT_PUBLIC_SUPABASE_URL non configuré, utilisation de valeurs par défaut pour le développement')
+// 2. Vérifier qu'elles existent
+if (!supabaseUrl || !supabaseAnonKey) {
+  // Si elles n'existent pas, on arrête tout avec une erreur claire.
+  throw new Error('Supabase URL and/ou Anon Key ne sont pas définies dans les variables d\'environnement.');
 }
 
-if (!supabaseAnonKey) {
-  console.warn('⚠️  SUPABASE: NEXT_PUBLIC_SUPABASE_ANON_KEY non configuré, utilisation de valeurs par défaut pour le développement')
-}
+// 3. Créer le client uniquement si tout est OK
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Use default values for development if not configured
-const defaultUrl = 'https://placeholder-project.supabase.co'
-const defaultKey = 'placeholder-anon-key'
 
-export const supabase = createClient(supabaseUrl || defaultUrl, supabaseAnonKey || defaultKey)
